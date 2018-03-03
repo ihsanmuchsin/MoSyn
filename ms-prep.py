@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from sys import argv, exit
 
 import preprocess.wormbase as pwb
+import preprocess.flybase as pfb
 
 
 def fasta2json(args):
@@ -13,6 +14,8 @@ def fasta2json(args):
     outfolder = args.output
     if args.type == 'wormbase':
         pwb.fasta_to_json_folder(infolder, outfolder)
+    elif args.type == 'flybase':
+        pfb.fasta_to_json_folder(infolder, outfolder)
 
 
 def cleanheader(args):
@@ -20,6 +23,8 @@ def cleanheader(args):
     outfolder = args.output
     if args.type == 'wormbase':
         pwb.clean_header_fasta_folder(infolder, outfolder)
+    elif args.type == 'flybase':
+        pfb.clean_header_fasta_folder(infolder, outfolder)
 
 
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')

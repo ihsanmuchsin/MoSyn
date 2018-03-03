@@ -1,5 +1,5 @@
 """
-Pre processing data from WormBase
+Pre processing data from FlyBase
 """
 
 import json
@@ -30,9 +30,24 @@ def fasta_to_json(infile, outfile):
 
             header = re.findall(r">(\S+)", line)[0]
 
-            search_entry = re.findall(r"(\S+)=([^\s\"]+)", line) + re.findall(r"(\S+)=\"(.+?)\"", line)
+            search_entry = re.findall(r"(\S+)=(\S+);", line)
             for item in search_entry:
                 key, value = item
+
+                if key == 'loc':
+                    subentry = re.findall(r"([^\s,]+):(\S+\)+)", value)
+                else:
+                    subentry = re.findall(r"([^\s,]+):([^\s,]+)", value)
+
+                if subentry:
+                    value = dict()
+                    for itm in subentry:
+                        k, v = itm
+                        value[k] = v
+
+                if type(value) == str and len(value.split(",")) > 1:
+                    value = value.split(",")
+
                 entry_dict[key] = value
 
             json_dict[header] = entry_dict
