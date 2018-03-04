@@ -5,26 +5,26 @@ Data pre processing for MoSyn pipeline
 from argparse import ArgumentParser
 from sys import argv, exit
 
-import preprocess.wormbase as pwb
-import preprocess.flybase as pfb
+import preprocess.fasta as pf
+import preprocess.gtf as pg
 
 
 def fasta2json(args):
     infolder = args.input
     outfolder = args.output
-    if args.type == 'wormbase':
-        pwb.fasta_to_json_folder(infolder, outfolder)
-    elif args.type == 'flybase':
-        pfb.fasta_to_json_folder(infolder, outfolder)
+    pf.fasta_to_json_folder(infolder, outfolder, args.type)
 
 
 def cleanheader(args):
     infolder = args.input
     outfolder = args.output
-    if args.type == 'wormbase':
-        pwb.clean_header_fasta_folder(infolder, outfolder)
-    elif args.type == 'flybase':
-        pfb.clean_header_fasta_folder(infolder, outfolder)
+    pf.clean_header_fasta_folder(infolder, outfolder)
+
+
+def gtf2json(args):
+    infolder = args.input
+    outfolder = args.output
+    pg.gtf_to_json_folder(infolder, outfolder)
 
 
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')
@@ -40,8 +40,12 @@ p_ftj.set_defaults(func=fasta2json)
 p_cfh = subp.add_parser('cleanheader', help='Clean FASTA header')
 p_cfh.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
 p_cfh.add_argument('--output', metavar='<String>', help='Path to the output folder', required=True)
-p_cfh.add_argument('--type', metavar='<String>', help='Type of the input', required=True)
 p_cfh.set_defaults(func=cleanheader)
+
+p_gtj = subp.add_parser('gtf2json', help='Convert GTF to JSON')
+p_gtj.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
+p_gtj.add_argument('--output', metavar='<String>', help='Path to the output folder', required=True)
+p_gtj.set_defaults(func=gtf2json)
 
 if len(argv) == 1:
     p.print_help()

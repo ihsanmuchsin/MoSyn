@@ -1,5 +1,5 @@
 """
-Pre processing data from FlyBase
+FASTA File Processing
 """
 
 import json
@@ -9,19 +9,17 @@ import re
 from misc.string import *
 
 
-def fasta_to_json(infile, outfile):
+def flybase_fasta_to_dict(infile):
     """
-    Convert FASTA to JSON
-    :param infile: FASTA file
-    :param outfile: JSON file
-    :return:
+    Convert FASTA to Python dictionary
+    :param infile: FASTA file from FlyBase
+    :return: Python dictionary
     """
 
-    fin = open(infile, 'r')
-
-    json_dict = dict()
+    fasta_dict = dict()
     header = None
 
+    fin = open(infile, 'r')
     for line in fin.readlines():
 
         if line.startswith(">"):
@@ -50,24 +48,79 @@ def fasta_to_json(infile, outfile):
 
                 entry_dict[key] = value
 
-            json_dict[header] = entry_dict
+            fasta_dict[header] = entry_dict
 
         else:
 
-            if "sequence" not in json_dict[header].keys():
-                json_dict[header]["sequence"] = []
-            json_dict[header]["sequence"].append(line.strip())
+            if "sequence" not in fasta_dict[header].keys():
+                fasta_dict[header]["sequence"] = []
+            fasta_dict[header]["sequence"].append(line.strip())
 
     fin.close()
+
+    return fasta_dict
+
+
+def wormbase_fasta_to_dict(infile):
+    """
+    Convert FASTA to Python dictionary
+    :param infile: FASTA file from WormBase
+    :return: Python dictionary
+    """
+
+    fasta_dict = dict()
+    header = None
+
+    fin = open(infile, 'r')
+    for line in fin.readlines():
+
+        if line.startswith(">"):
+
+            entry_dict = dict()
+
+            header = re.findall(r">(\S+)", line)[0]
+
+            search_entry = re.findall(r"(\S+)=([^\s\"]+)", line) + re.findall(r"(\S+)=\"(.+?)\"", line)
+            for item in search_entry:
+                key, value = item
+                entry_dict[key] = value
+
+            fasta_dict[header] = entry_dict
+
+        else:
+
+            if "sequence" not in fasta_dict[header].keys():
+                fasta_dict[header]["sequence"] = []
+            fasta_dict[header]["sequence"].append(line.strip())
+
+    fin.close()
+
+    return fasta_dict
+
+
+def fasta_to_json(infile, outfile, db_name):
+    """
+    Convert FASTA to JSON
+    :param db_name: DataBase source, e.g., FlyBase, WormBase
+    :param infile: FASTA file
+    :param outfile: JSON file
+    :return:
+    """
+
+    if db_name == "flybase":
+        json_dict = flybase_fasta_to_dict(infile)
+    elif db_name == "wormbase":
+        json_dict = wormbase_fasta_to_dict(infile)
 
     fout = open(outfile, 'w')
     json.dump(json_dict, fout, indent=5)
     fout.close()
 
 
-def fasta_to_json_folder(infolder, outfolder):
+def fasta_to_json_folder(infolder, outfolder, db_name):
     """
     Convert FASTA to JSON
+    :param db_name: DataBase source, e.g., FlyBase, WormBase
     :param infolder: FASTA folder
     :param outfolder: JSON folder
     :return:
@@ -81,7 +134,7 @@ def fasta_to_json_folder(infolder, outfolder):
         new_filename = filename.split(".")[0] + ".json"
         outfile = outfolder + new_filename
 
-        fasta_to_json(file, outfile)
+        fasta_to_json(file, outfile, db_name)
 
 
 def clean_header_fasta(infile, outfile):
@@ -98,8 +151,8 @@ def clean_header_fasta(infile, outfile):
     for line in fin.readlines():
         if line.startswith(">"):
 
-            line_elem = line.strip().split(" ")
-            print(line_elem[0], file=fout)
+            header = re.findall(r"(>\S+)", line)[0]
+            print(header, file=fout)
 
         else:
             fout.write(line)
