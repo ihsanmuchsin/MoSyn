@@ -177,3 +177,64 @@ def clean_header_fasta_folder(infolder, outfolder):
         outfile = outfolder + filename
 
         clean_header_fasta(file, outfile)
+
+
+def fasta_to_conversion_dict(infile, db_name):
+    """
+    Convert FASTA file to Python dictionary containing Protein ID -> Gene ID
+    :param infile: FASTA file
+    :param db_name: DataBase source, e.g., FlyBase, WormBase
+    :return:
+    """
+
+    id_conversion_dict = dict()
+
+    if db_name == "wormbase":
+        fasta_dict = wormbase_fasta_to_dict(infile)
+        for key, value in fasta_dict.items():
+            id_conversion_dict[key] = value["gene"]
+    elif db_name == "flybase":
+        fasta_dict = flybase_fasta_to_dict(infile)
+        for key, value in fasta_dict.items():
+            id_conversion_dict[key] = value["parent"][0]
+
+    return id_conversion_dict
+
+
+def fasta_to_conversion_file(infile, outfile, db_name):
+    """
+    Convert FASTA file to conversion file containing Protein ID -> Gene ID
+    :param db_name: DataBase source, e.g., FlyBase, WormBase
+    :param outfile: ID Conversion file in .tsv format
+    :param infile: FASTA file
+    :return:
+    """
+
+    fout = open(outfile, "w")
+
+    id_conversion_dict = fasta_to_conversion_dict(infile, db_name)
+    for key, value in id_conversion_dict.items():
+        print(key, value, sep="\t", file=fout)
+
+    fout.close()
+
+
+def fasta_to_conversion_folder(infolder, outfolder, db_name):
+    """
+    Convert FASTA file to ID Conversion file containing Protein ID -> Gene ID
+    :param db_name: DataBase source, e.g., FlyBase, WormBase
+    :param infolder: FASTA folder
+    :param outfolder: ID Conversion folder
+    :return:
+    """
+
+    infolder = check_folder_path(infolder)
+    outfolder = check_folder_path(outfolder, True)
+
+    for file in glob.glob(infolder + '*'):
+        filename = os.path.basename(file)
+        new_filename = filename.split(".")[0] + ".tsv"
+        outfile = outfolder + new_filename
+
+        fasta_to_conversion_file(file, outfile, db_name)
+
