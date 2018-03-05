@@ -2,6 +2,8 @@
 ID Conversion File Processing
 """
 
+import glob
+
 
 def id_conversion_file_to_dict(infile, protein_column=0, gene_column=1, column_sep="\t"):
     """
@@ -28,3 +30,15 @@ def id_conversion_file_to_dict(infile, protein_column=0, gene_column=1, column_s
     fin.close()
 
     return id_conversion_dict
+
+
+def id_conversion_folder_to_dict(infolder, protein_column=0, gene_column=1, column_sep="\t"):
+
+    super_id_conversion_dict = dict()
+
+    for file in glob.glob(infolder + '*'):
+        id_conversion_dict = id_conversion_file_to_dict(file, protein_column, gene_column, column_sep)
+        for key, value in id_conversion_dict.items():
+            super_id_conversion_dict[key] = value
+
+    return super_id_conversion_dict

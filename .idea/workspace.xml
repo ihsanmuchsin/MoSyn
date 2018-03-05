@@ -30,8 +30,8 @@
       <file leaf-file-name="fasta.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/prep/fasta.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="751">
-              <caret line="239" column="0" lean-forward="true" selection-start-line="239" selection-start-column="0" selection-end-line="239" selection-end-column="0" />
+            <state relative-caret-position="661">
+              <caret line="233" column="20" lean-forward="true" selection-start-line="233" selection-start-column="4" selection-end-line="233" selection-end-column="42" />
               <folding>
                 <element signature="e#31#42#0" expanded="true" />
               </folding>
@@ -42,8 +42,8 @@
       <file leaf-file-name="idconversion.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/prep/idconversion.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
+            <state relative-caret-position="285">
+              <caret line="19" column="27" lean-forward="true" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -52,8 +52,8 @@
       <file leaf-file-name="orthogroups.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/prep/orthogroups.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="30" column="87" lean-forward="false" selection-start-line="30" selection-start-column="32" selection-end-line="30" selection-end-column="146" />
+            <state relative-caret-position="451">
+              <caret line="73" column="0" lean-forward="true" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
               <folding>
                 <element signature="e#58#89#0" expanded="true" />
               </folding>
@@ -61,7 +61,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="orthofinder.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="orthofinder.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/orthofinder.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="225">
@@ -85,11 +85,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ms-prep.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ms-prep.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ms-prep.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="436">
-              <caret line="83" column="26" lean-forward="false" selection-start-line="83" selection-start-column="26" selection-end-line="83" selection-end-column="26" />
+            <state relative-caret-position="196">
+              <caret line="49" column="0" lean-forward="true" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
               <folding>
                 <element signature="e#48#83#0" expanded="true" />
               </folding>
@@ -121,8 +121,8 @@
         <option value="$PROJECT_DIR$/preprocess/fasta.py" />
         <option value="$PROJECT_DIR$/preprocess/idconversion.py" />
         <option value="$PROJECT_DIR$/prep/idconversion.py" />
-        <option value="$PROJECT_DIR$/prep/orthogroups.py" />
         <option value="$PROJECT_DIR$/ms-prep.py" />
+        <option value="$PROJECT_DIR$/prep/orthogroups.py" />
       </list>
     </option>
   </component>
@@ -472,16 +472,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/prep/fasta.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="751">
-          <caret line="239" column="0" lean-forward="true" selection-start-line="239" selection-start-column="0" selection-end-line="239" selection-end-column="0" />
-          <folding>
-            <element signature="e#31#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/prep/gtf.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="766">
@@ -492,30 +482,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/prep/idconversion.py">
+    <entry file="file://$PROJECT_DIR$/prep/fasta.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/prep/orthogroups.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="30" column="87" lean-forward="false" selection-start-line="30" selection-start-column="32" selection-end-line="30" selection-end-column="146" />
+        <state relative-caret-position="661">
+          <caret line="233" column="20" lean-forward="true" selection-start-line="233" selection-start-column="4" selection-end-line="233" selection-end-column="42" />
           <folding>
-            <element signature="e#58#89#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/orthofinder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="43" lean-forward="true" selection-start-line="15" selection-start-column="43" selection-end-line="15" selection-end-column="43" />
-          <folding>
-            <element signature="e#30#47#0" expanded="true" />
+            <element signature="e#31#42#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -532,10 +504,38 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ms-prep.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="436">
-          <caret line="83" column="26" lean-forward="false" selection-start-line="83" selection-start-column="26" selection-end-line="83" selection-end-column="26" />
+        <state relative-caret-position="196">
+          <caret line="49" column="0" lean-forward="true" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
           <folding>
             <element signature="e#48#83#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/prep/idconversion.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="27" lean-forward="true" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/prep/orthogroups.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="451">
+          <caret line="73" column="0" lean-forward="true" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+          <folding>
+            <element signature="e#58#89#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/orthofinder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="43" lean-forward="true" selection-start-line="15" selection-start-column="43" selection-end-line="15" selection-end-column="43" />
+          <folding>
+            <element signature="e#30#47#0" expanded="true" />
           </folding>
         </state>
       </provider>

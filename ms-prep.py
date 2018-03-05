@@ -36,7 +36,7 @@ def fasta2idconv(args):
 
 def ogprot2gene(args):
     orthogroup_file = args.og
-    id_conversion_file = args.conv
+    id_conversion_folder = args.conv
     outfile = args.output
 
     protein_column = args.pcol
@@ -45,7 +45,7 @@ def ogprot2gene(args):
 
     non_redundant = args.nr
 
-    pog.orthogroups_protein_to_gene(orthogroup_file, id_conversion_file, outfile, protein_column, gene_column, column_sep, non_redundant)
+    pog.orthogroups_protein_to_gene(orthogroup_file, id_conversion_folder, outfile, protein_column, gene_column, column_sep, non_redundant)
 
 
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')
@@ -76,7 +76,7 @@ p_fti.set_defaults(func=fasta2idconv)
 
 p_optg = subp.add_parser('ogprot2gene', help='Convert Orthogroups Protein to Gene')
 p_optg.add_argument('--og', metavar='<String>', help='Orthogroups protein file', required=True)
-p_optg.add_argument('--conv', metavar='<String>', help='Protein ID to Gene ID conversion file', required=True)
+p_optg.add_argument('--conv', metavar='<String>', help='Protein ID to Gene ID conversion folder', required=True)
 p_optg.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
 p_optg.add_argument('--pcol', metavar='<Integer>', help='Protein column', type=int, default=0)
 p_optg.add_argument('--gcol', metavar='<Integer>', help='Gene column', type=int, default=1)

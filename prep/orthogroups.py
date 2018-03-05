@@ -28,12 +28,12 @@ def orthogroups_file_to_dict(infile):
     return orthogroups_dict
 
 
-def orthogroups_protein_to_gene(orthogroup_file, id_conversion_file, outfile, protein_column=0, gene_column=1, column_sep="\t", non_redundant=True):
+def orthogroups_protein_to_gene(orthogroups_file, id_conversion_folder, outfile, protein_column=0, gene_column=1, column_sep="\t", non_redundant=True):
     """
     Convert protein ID orthogroups to gene ID orthogroups
     :param non_redundant: Remove redundancies
-    :param orthogroup_file: protein ID orthogroups file
-    :param id_conversion_file: ID conversion file
+    :param orthogroups_file: protein ID orthogroups file
+    :param id_conversion_folder: ID conversion file
     :param outfile: gene ID orthogroups file
     :param protein_column: Column containing protein ID
     :param gene_column: Column containing gene ID
@@ -41,8 +41,8 @@ def orthogroups_protein_to_gene(orthogroup_file, id_conversion_file, outfile, pr
     :return:
     """
 
-    orthogroups_dict = orthogroups_file_to_dict(orthogroup_file)
-    id_conversion_dict = pcv.id_conversion_file_to_dict(id_conversion_file, protein_column, gene_column, column_sep)
+    orthogroups_dict = orthogroups_file_to_dict(orthogroups_file)
+    id_conversion_dict = pcv.id_conversion_folder_to_dict(id_conversion_folder, protein_column, gene_column, column_sep)
 
     converted_orthogroups_dict = dict()
     for key, values in orthogroups_dict.items():
@@ -61,7 +61,7 @@ def orthogroups_protein_to_gene(orthogroup_file, id_conversion_file, outfile, pr
 
         # Count each value occurence and get the list of values which occur more than 1
         value_counter = Counter(all_values)
-        duplicate_values = [k for k, v in value_counter.iteritems() if v > 1]
+        duplicate_values = [k for k, v in value_counter.items() if v > 1]
 
         # Get duplicate value to keys
         duplicate_dict = dict()
@@ -69,8 +69,8 @@ def orthogroups_protein_to_gene(orthogroup_file, id_conversion_file, outfile, pr
             for value in values:
                 if value in duplicate_values:
                     if value not in duplicate_dict.keys():
-                        duplicate_dict[value] = set()
-                    duplicate_dict[value].add(key)
+                        duplicate_dict[value] = []
+                    duplicate_dict[value].append(key)
 
         # remove duplicate value, only save one
         for key, values in duplicate_dict.items():
