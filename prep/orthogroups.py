@@ -92,3 +92,36 @@ def orthogroups_protein_to_gene(orthogroups_file, id_conversion_folder, outfile,
         print (key+":", " ".join(values), file=fout)
     fout.close()
 
+
+def orthogroups_to_iadhore_family_dict(infile):
+    """
+    Convert Orthogroups to i-ADHoRe family dictionary
+    :param infile: Orthogroups file
+    :return: i-ADHoRe family dictionary
+    """
+
+    iadhore_family_dict = dict()
+
+    orthogroups_dict = orthogroups_file_to_dict(infile)
+    for key, values in orthogroups_dict.items():
+        for value in values:
+            iadhore_family_dict[value] = key
+
+    return iadhore_family_dict
+
+
+def orthogroups_to_iadhore_family_file(infile, outfile):
+    """
+    Convert Orthogroups to i-ADHoRe family file
+    :param infile: Orthogroups file
+    :param outfile: i-ADHoRe family file
+    :return:
+    """
+
+    fout = open(outfile, 'w')
+
+    iadhore_family_dict = orthogroups_to_iadhore_family_dict(infile)
+    for key, value in iadhore_family_dict.items():
+        print(key, value, sep="\t", file=fout)
+
+    fout.close()

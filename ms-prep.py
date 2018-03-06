@@ -48,6 +48,12 @@ def ogprot2gene(args):
     pog.orthogroups_protein_to_gene(orthogroup_file, id_conversion_folder, outfile, protein_column, gene_column, column_sep, non_redundant)
 
 
+def og2fam(args):
+    infile = args.input
+    outfile = args.output
+    pog.orthogroups_to_iadhore_family_file(infile, outfile)
+
+
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')
 
 subp = p.add_subparsers()
@@ -84,6 +90,12 @@ p_optg.add_argument('--csep', metavar='<Integer>', help='Column separator', defa
 p_optg.add_argument('--nr', help='Non redundant values', default=False, action='store_true')
 p_optg.set_defaults(func=ogprot2gene)
 
+p_otf = subp.add_parser('og2fam', help='Convert Orthogroups file to i-ADHoRe family')
+p_otf.add_argument('--input', metavar='<String>', help='Path to the input file', required=True)
+p_otf.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
+p_otf.set_defaults(func=og2fam)
+
+
 if len(argv) == 1:
     p.print_help()
     exit(0)
@@ -99,6 +111,8 @@ if len(argv) == 2:
         p_fti.print_help()
     elif argv[1] == 'ogprot2gene':
         p_optg.print_help()
+    elif argv[1] == 'og2fam':
+        p_otf.print_help()
     exit(0)
 
 args = p.parse_args()

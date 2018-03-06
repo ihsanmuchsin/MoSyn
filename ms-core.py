@@ -7,6 +7,8 @@ from argparse import ArgumentParser
 from sys import argv, exit
 
 from core.orthofinder import *
+from core.storm import *
+
 from misc.string import *
 
 
@@ -18,7 +20,16 @@ def orthofinder(args):
     run_orthofinder(infolder, outfolder, python2env=args.python2, orthofinder_options=args.opt)
 
 
-# create parser
+def storm(args):
+    infolder = check_folder_path(args.input)
+    pwm_folder = check_folder_path(args.pwm)
+    outfolder = check_folder_path(args.output)
+
+    storm_options = args.opt
+    calculate_base_comp = args.bcomp
+
+    run_storm(infolder, pwm_folder, outfolder, storm_options, calculate_base_comp)
+
 p = ArgumentParser(prog='ms-core', description='MoSyn Pipeline')
 
 subp = p.add_subparsers()
@@ -34,6 +45,18 @@ p_of.add_argument("--opt", default=None, metavar="<String>",
                        "Please refer to the OrthoFinder Manual.")
 p_of.set_defaults(func=orthofinder)
 
+p_st = subp.add_parser("storm", help="Run CREAD STORM")
+p_st.add_argument("--input", metavar="<String>", help="Input folder", required=True)
+p_st.add_argument("--pwm", metavar="<String>", help="PWM folder", required=True)
+p_st.add_argument("--output", default="./storm_result/", metavar="<String>",
+                  help="Output folder")
+p_st.add_argument("--opt", default=None, metavar="<String>",
+                  help="Options for CREAD STORM. "
+                       "Must be put inside a single quote, for example '-t 17'. "
+                       "Please refer to the CREAD STORM Manual.")
+p_st.add_argument("--bcomp", default=False, action='store_true', help="Calculate base composition")
+p_st.set_defaults(func=storm)
+
 
 if len(argv) == 1:
     p.print_help()
@@ -42,6 +65,8 @@ if len(argv) == 1:
 if len(argv) == 2:
     if argv[1] == 'orthofinder':
         p_of.print_help()
+    if argv[1] == 'storm':
+        p_st.print_help()
     exit(0)
 
 args = p.parse_args()
