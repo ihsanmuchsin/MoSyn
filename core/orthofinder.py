@@ -4,8 +4,9 @@ OrthoFinder function
 
 import subprocess
 import glob
+import os
 
-from misc.string import *
+from misc.string import check_folder_path
 
 
 def run_orthofinder(infolder, outfolder, python2env, orthofinder_options=None):

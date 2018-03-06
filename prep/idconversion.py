@@ -4,6 +4,8 @@ ID Conversion File Processing
 
 import glob
 
+from misc.string import check_folder_path
+
 
 def id_conversion_file_to_dict(infile, protein_column=0, gene_column=1, column_sep="\t"):
     """
@@ -35,6 +37,8 @@ def id_conversion_file_to_dict(infile, protein_column=0, gene_column=1, column_s
 def id_conversion_folder_to_dict(infolder, protein_column=0, gene_column=1, column_sep="\t"):
 
     super_id_conversion_dict = dict()
+
+    infolder = check_folder_path(infolder)
 
     for file in glob.glob(infolder + '*'):
         id_conversion_dict = id_conversion_file_to_dict(file, protein_column, gene_column, column_sep)

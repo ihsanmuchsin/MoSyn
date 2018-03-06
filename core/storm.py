@@ -7,7 +7,7 @@ import os
 import subprocess
 import glob
 
-from misc.string import *
+from misc.string import check_folder_path
 
 
 def get_base_composition(infile):

@@ -5,8 +5,9 @@ FASTA File Processing
 import json
 import glob
 import re
+import os
 
-from misc.string import *
+from misc.string import check_folder_path
 
 
 def flybase_fasta_to_dict(infile):

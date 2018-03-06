@@ -5,8 +5,10 @@ GTF File Processing
 import json
 import glob
 import re
+import pandas as pd
+import os
 
-from misc.string import *
+from misc.string import check_folder_path
 
 
 def gtf_to_dict(infile):
@@ -61,7 +63,6 @@ def gtf_to_json(infile, outfile):
     fout.close()
 
 
-
 def gtf_to_json_folder(infolder, outfolder):
     """
     Convert GTF to JSON
@@ -79,3 +80,52 @@ def gtf_to_json_folder(infolder, outfolder):
         outfile = outfolder + new_filename
 
         gtf_to_json(file, outfile)
+
+
+def gtf_to_iadhore_list(infile, outfolder):
+    """
+    Convert GTF file to i-ADHoRe list
+    :param infile: GTF file
+    :param outfolder: i-ADHoRe list
+    :return:
+    """
+
+    outfolder = check_folder_path(outfolder, True)
+    gtf_dict = gtf_to_dict(infile)
+    suboutfolder = outfolder + os.path.basename(infile).split('.')[0]
+    suboutfolder = check_folder_path(suboutfolder, True)
+
+    # Create pandas dataframe
+    gene_location_list = []
+    for key, values in gtf_dict.items():
+        for value in values:
+            if value['feature'] == 'gene':
+                gene_location_list.append((value['attribute']['gene_id'], value['strand'],
+                                           key, int(value['start']), int(value['end'])))
+    labels = ['gene', 'strand', 'chromosome', 'start', 'end']
+    df = pd.DataFrame.from_records(gene_location_list, columns=labels)
+    groups = df.groupby(['chromosome'])
+
+    for chromosome, group in groups:
+        outfile = suboutfolder + chromosome + '.lst'
+        group_sort = group.sort_values(['start'])
+
+        fout = open(outfile, 'w')
+        for idx in group_sort.index:
+            print(group_sort.at[idx, 'gene'] + group_sort.at[idx, 'strand'], file=fout)
+        fout.close()
+
+
+def gtf_to_iadhore_list_folder(infolder, outfolder):
+    """
+    Convert GTF file to i-ADHoRe list
+    :param infolder: GTF folder
+    :param outfolder: i-ADHoRe list
+    :return:
+    """
+
+    infolder = check_folder_path(infolder)
+    outfolder = check_folder_path(outfolder, True)
+
+    for file in glob.glob(infolder + '*'):
+        gtf_to_iadhore_list(file, outfolder)

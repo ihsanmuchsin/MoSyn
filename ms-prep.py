@@ -7,7 +7,8 @@ from sys import argv, exit
 
 import prep.fasta as pf
 import prep.gtf as pg
-import prep.orthogroups as pog
+import prep.orthofinder as pof
+import prep.iadhore as pi
 
 
 def fasta2json(args):
@@ -45,13 +46,27 @@ def ogprot2gene(args):
 
     non_redundant = args.nr
 
-    pog.orthogroups_protein_to_gene(orthogroup_file, id_conversion_folder, outfile, protein_column, gene_column, column_sep, non_redundant)
+    pof.orthogroups_protein_to_gene(orthogroup_file, id_conversion_folder, outfile, protein_column, gene_column, column_sep, non_redundant)
 
 
 def og2fam(args):
     infile = args.input
     outfile = args.output
-    pog.orthogroups_to_iadhore_family_file(infile, outfile)
+    pof.orthogroups_to_iadhore_family_file(infile, outfile)
+
+
+def gtf2list(args):
+    infolder = args.input
+    outfolder = args.output
+    pg.gtf_to_iadhore_list_folder(infolder, outfolder)
+
+
+def listfilter(args):
+    infolder = args.input
+    family_file = args.fam
+    outfolder = args.output
+
+    pi.iadhore_list_family_filtering(infolder, family_file, outfolder)
 
 
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')
@@ -95,6 +110,17 @@ p_otf.add_argument('--input', metavar='<String>', help='Path to the input file',
 p_otf.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
 p_otf.set_defaults(func=og2fam)
 
+p_gtl = subp.add_parser('gtf2list', help='Convert GTF files to i-ADHoRe genes list')
+p_gtl.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
+p_gtl.add_argument('--output', metavar='<String>', help='Path to the output folder', required=True)
+p_gtl.set_defaults(func=gtf2list)
+
+p_lf = subp.add_parser('listfilter', help='Filter i-ADHoRe genes list by choosing only genes in orthogroups')
+p_lf.add_argument('--input', metavar='<String>', help='Path to the i-ADHoRe genes list', required=True)
+p_lf.add_argument('--fam', metavar='<String>', help='Path to the i-ADHoRe family file', required=True)
+p_lf.add_argument('--output', metavar='<String>', help='Path to the output folder', required=True)
+p_lf.set_defaults(func=listfilter)
+
 
 if len(argv) == 1:
     p.print_help()
@@ -113,6 +139,10 @@ if len(argv) == 2:
         p_optg.print_help()
     elif argv[1] == 'og2fam':
         p_otf.print_help()
+    elif argv[1] == 'gtf2list':
+        p_gtl.print_help()
+    elif argv[1] == 'listfilter':
+        p_lf.print_help()
     exit(0)
 
 args = p.parse_args()

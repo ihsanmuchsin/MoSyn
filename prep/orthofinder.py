@@ -1,5 +1,5 @@
 """
-OrthoFinder/OrthoMCL Orthogroups File Processing
+OrthoFinder Processing
 """
 
 from collections import Counter

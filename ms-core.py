@@ -6,10 +6,10 @@ The core of MoSyn pipeline
 from argparse import ArgumentParser
 from sys import argv, exit
 
-from core.orthofinder import *
-from core.storm import *
+import core.orthofinder as co
+import core.storm as cs
 
-from misc.string import *
+from misc.string import check_folder_path
 
 
 def orthofinder(args):
@@ -17,7 +17,7 @@ def orthofinder(args):
     infolder = check_folder_path(args.input)
     outfolder = check_folder_path(args.output)
 
-    run_orthofinder(infolder, outfolder, python2env=args.python2, orthofinder_options=args.opt)
+    co.run_orthofinder(infolder, outfolder, python2env=args.python2, orthofinder_options=args.opt)
 
 
 def storm(args):
@@ -28,7 +28,7 @@ def storm(args):
     storm_options = args.opt
     calculate_base_comp = args.bcomp
 
-    run_storm(infolder, pwm_folder, outfolder, storm_options, calculate_base_comp)
+    cs.run_storm(infolder, pwm_folder, outfolder, storm_options, calculate_base_comp)
 
 p = ArgumentParser(prog='ms-core', description='MoSyn Pipeline')
 
