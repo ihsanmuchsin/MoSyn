@@ -69,6 +69,16 @@ def listfilter(args):
     pi.iadhore_list_family_filtering(infolder, family_file, outfolder)
 
 
+def createiaconfig(args):
+    iadhore_genes_list = args.glist
+    iadhore_family_file = args.fam
+    iadhore_parameter_file = args.param
+    iadhore_result_folder = args.res
+    outfile = args.output
+
+    pi.create_iadhore_config(iadhore_genes_list, iadhore_family_file, iadhore_parameter_file, iadhore_result_folder, outfile)
+
+
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')
 
 subp = p.add_subparsers()
@@ -101,7 +111,7 @@ p_optg.add_argument('--conv', metavar='<String>', help='Protein ID to Gene ID co
 p_optg.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
 p_optg.add_argument('--pcol', metavar='<Integer>', help='Protein column', type=int, default=0)
 p_optg.add_argument('--gcol', metavar='<Integer>', help='Gene column', type=int, default=1)
-p_optg.add_argument('--csep', metavar='<Integer>', help='Column separator', default="\t")
+p_optg.add_argument('--csep', metavar='<String>', help='Column separator', default="\t")
 p_optg.add_argument('--nr', help='Non redundant values', default=False, action='store_true')
 p_optg.set_defaults(func=ogprot2gene)
 
@@ -120,6 +130,14 @@ p_lf.add_argument('--input', metavar='<String>', help='Path to the i-ADHoRe gene
 p_lf.add_argument('--fam', metavar='<String>', help='Path to the i-ADHoRe family file', required=True)
 p_lf.add_argument('--output', metavar='<String>', help='Path to the output folder', required=True)
 p_lf.set_defaults(func=listfilter)
+
+p_cc = subp.add_parser('createiaconfig', help='Create i-ADHoRe configuration file')
+p_cc.add_argument('--glist', metavar='<String>', help='Path to the i-ADHoRe genes list', required=True)
+p_cc.add_argument('--fam', metavar='<String>', help='Path to the i-ADHoRe family file', required=True)
+p_cc.add_argument('--param', metavar='<String>', help='Path to the i-ADHoRe parameter file', required=True)
+p_cc.add_argument('--res', metavar='<String>', help='Path to the i-ADHoRe output folder', required=True)
+p_cc.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
+p_cc.set_defaults(func=createiaconfig)
 
 
 if len(argv) == 1:
@@ -143,6 +161,8 @@ if len(argv) == 2:
         p_gtl.print_help()
     elif argv[1] == 'listfilter':
         p_lf.print_help()
+    elif argv[1] == 'createiaconfig':
+        p_cc.print_help()
     exit(0)
 
 args = p.parse_args()
