@@ -24,7 +24,7 @@ def run_orthofinder(infolder, outfolder, python2env, orthofinder_options=None):
     print('source', 'activate', python2env, file=fout)
 
     list_command = ['orthofinder', '-f', infolder]
-    if orthofinder_options != None:
+    if orthofinder_options:
         list_command += orthofinder_options.split(' ')
     print(' '.join(list_command), file=fout)
 

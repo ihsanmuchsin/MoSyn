@@ -28,7 +28,8 @@ def orthogroups_file_to_dict(infile):
     return orthogroups_dict
 
 
-def orthogroups_protein_to_gene(orthogroups_file, id_conversion_folder, outfile, protein_column=0, gene_column=1, column_sep="\t", non_redundant=True):
+def orthogroups_protein_to_gene(orthogroups_file, id_conversion_folder, outfile,
+                                protein_column=0, gene_column=1, column_sep="\t", non_redundant=True):
     """
     Convert protein ID orthogroups to gene ID orthogroups
     :param non_redundant: Remove redundancies
@@ -89,7 +90,7 @@ def orthogroups_protein_to_gene(orthogroups_file, id_conversion_folder, outfile,
     # Now save the dictionary to file
     fout = open(outfile, 'w')
     for key, values in converted_orthogroups_dict.items():
-        print (key+":", " ".join(values), file=fout)
+        print(key+":", " ".join(values), file=fout)
     fout.close()
 
 

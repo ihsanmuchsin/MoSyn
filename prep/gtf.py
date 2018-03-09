@@ -129,3 +129,23 @@ def gtf_to_iadhore_list_folder(infolder, outfolder):
 
     for file in glob.glob(infolder + '*'):
         gtf_to_iadhore_list(file, outfolder)
+
+
+def gtf_to_dict_folder(infolder):
+    """
+    Convert GTF files to dictionary
+    :param infolder: GTF folder
+    :return: Python dictionary
+    """
+
+    all_gtf = dict()
+
+    infolder = check_folder_path(infolder)
+    for file in glob.glob(infolder + '*'):
+        filename = os.path.basename(file)
+        filename = filename.split(".")[0]
+
+        all_gtf[filename] = gtf_to_dict(file)
+
+    return all_gtf
+

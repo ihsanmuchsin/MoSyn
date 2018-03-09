@@ -9,6 +9,7 @@ import prep.fasta as pf
 import prep.gtf as pg
 import prep.orthofinder as pof
 import prep.iadhore as pi
+import prep.storm as ps
 
 
 def fasta2json(args):
@@ -79,6 +80,20 @@ def createiaconfig(args):
     pi.create_iadhore_config(iadhore_genes_list, iadhore_family_file, iadhore_parameter_file, iadhore_result_folder, outfile)
 
 
+def iadhore2serial(args):
+
+    infolder = args.input
+    outfile = args.output
+
+    pi.iadhore_result_to_serial(infolder, outfile, args.ftype, args.complete)
+
+def transfac2gtf(args):
+
+    infolder = args.input
+    outfolder = args.output
+    ps.transfac_to_gtf_folder(infolder, outfolder, args.mid, args.idx, args.name)
+
+
 p = ArgumentParser(prog='ms-prep', description='Data preprocessing for MoSyn pipeline')
 
 subp = p.add_subparsers()
@@ -139,6 +154,21 @@ p_cc.add_argument('--res', metavar='<String>', help='Path to the i-ADHoRe output
 p_cc.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
 p_cc.set_defaults(func=createiaconfig)
 
+p_iti = subp.add_parser('ia2serial', help='Convert i-ADHoRe output to JSON/YAML file')
+p_iti.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
+p_iti.add_argument('--output', metavar='<String>', help='Path to the output file', required=True)
+p_iti.add_argument('--ftype', metavar='<String>', help='Type of the output file', default="json")
+p_iti.add_argument('--complete', help='Complete synteny', default=False, action='store_true')
+p_iti.set_defaults(func=iadhore2serial)
+
+p_stg = subp.add_parser('transfac2gtf', help='Convert STORM output / TRANSFAC file format to GTF')
+p_stg.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
+p_stg.add_argument('--output', metavar='<String>', help='Path to the output folder', default="./STORM_to_GTF")
+p_stg.add_argument('--mid', metavar='<String>', help='Binding sites ID', default="BS")
+p_stg.add_argument('--idx', metavar='<String>', help='The starting number of the ID index', default=0, type=int)
+p_stg.add_argument('--name', metavar='<String>', help='The Motif name', default="MOTIF")
+p_stg.set_defaults(func=transfac2gtf)
+
 
 if len(argv) == 1:
     p.print_help()
@@ -163,6 +193,10 @@ if len(argv) == 2:
         p_lf.print_help()
     elif argv[1] == 'createiaconfig':
         p_cc.print_help()
+    elif argv[1] == 'ia2serial':
+        p_iti.print_help()
+    elif argv[1] == 'transfac2gtf':
+        p_stg.print_help()
     exit(0)
 
 args = p.parse_args()
