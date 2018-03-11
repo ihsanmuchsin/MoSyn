@@ -2,10 +2,6 @@
 MoSyn function
 """
 
-import numpy as np
-
-import prep.iadhore as pi
-import prep.storm as ps
 import prep.gtf as pg
 
 
@@ -183,7 +179,7 @@ def restructure_iadhore_dict_to_position(iadhore_synteny_dict):
     return restructured_dict
 
 
-def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=2500):
+def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=0.1):
 
     for key, value in iadhore_position_with_motifs_dict.items():
         for ke, val in value.items():
@@ -201,93 +197,81 @@ def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=2500):
                 for motif in val[k]["motifs"]:
 
                     dist = motif["distance"]
-                    this_strand = val[k]["strand"]==motif["strand"]
-                    pairs = None
+                    this_strand = val[k]["strand"] == motif["strand"]
+                    pairs = []
 
                     for k0 in other_keys:
 
                         if "motifs" not in val[k0].keys():
                             continue
 
-                        selected_pair = None
-                        min_diff = None
+                        selected_pair = []
 
                         for mot in val[k0]["motifs"]:
 
-                            that_strand = val[k0]["strand"]==mot["strand"]
+                            that_strand = val[k0]["strand"] == mot["strand"]
 
-                            if not(this_strand==that_strand):
+                            if not(this_strand == that_strand):
                                 continue
 
                             d = mot["distance"]
                             diff = abs(dist - d)
 
-                            if diff <= window:
-                                if min_diff == None:
-                                    selected_pair = mot
-                                    min_diff = diff
-                                    continue
-                                if diff < min_diff:
-                                    selected_pair = mot
-                                    min_diff = diff
+                            if diff <= (window*dist):
+                                selected_pair.append(mot)
+                                continue
 
                         if not selected_pair:
                             continue
 
                         if not pairs:
-                            pairs = list()
+                            for sl in selected_pair:
+                                pairs.append([sl])
+                            continue
 
-                        pairs.append(selected_pair)
+                        mod_pairs = []
+                        for pair in pairs:
+                            for sl in selected_pair:
+                                mod_pairs.append(pair + [sl])
+                                all_pairs.append(pair + [sl])
+                        pairs = mod_pairs
 
                     if not pairs:
                         continue
 
-                    pairs.append(motif)
+                    for pair in pairs:
+                        all_pairs.append(pair + [motif])
 
-                    if len(pairs) > 1:
-                        if pairs not in all_pairs:
-                            all_pairs.append(pairs)
+            # modified all pairs
+            nr_all_pairs = []
+            num_of_species = len(val)
+            for i in range(num_of_species, 1, -1):
+                kmer_pairs = dict()
+                for el in all_pairs:
+                    if len(el) == i:
+                        el_dist = [m["distance"] for m in el]
+                        el_sum = sum(list(el_dist))
 
-            # now remove redundancies
-            new_all_pairs = []
+                        if el_sum not in kmer_pairs.keys():
+                            kmer_pairs[el_sum] = []
+                        kmer_pairs[el_sum].append(el)
 
-            for el in all_pairs:
+                for su, ls in sorted(kmer_pairs.items()):
+                    for l in ls:
+                        if not nr_all_pairs:
+                            nr_all_pairs.append(l)
+                            continue
 
-                if not new_all_pairs:
-                    new_all_pairs.append(el)
-                    continue
-
-                check_prev = True
-                for e in el:
-                    for ef in new_all_pairs:
-                        if e in ef:
-
-                            if len(el) > len(ef):
-                                new_all_pairs.remove(ef)
-                                continue
-
-                            if len(el) < len(ef):
-                                check_prev = False
+                        check_nr = True
+                        for nr in nr_all_pairs:
+                            for e in l:
+                                if e in nr:
+                                    check_nr = False
+                                    break
+                            if not check_nr:
                                 break
-
-                            el_dist = [m["distance"] for m in el]
-                            ef_dist = [m["distance"] for m in ef]
-
-                            this_std = np.std(list(el_dist))
-                            that_std = np.std(list(ef_dist))
-
-                            if this_std < that_std:
-                                new_all_pairs.remove(ef)
-                                continue
-
-                            check_prev = False
-                            break
-
-                    if not check_prev:
-                        break
-
-                if check_prev:
-                    new_all_pairs.append(el)
+                        if check_nr:
+                            nr_all_pairs.append(l)
 
             # then add singleton
             single = []
@@ -298,15 +282,15 @@ def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=2500):
 
                 for motif in val[k]["motifs"]:
                     check_single = True
-                    for pair in new_all_pairs:
+                    for pair in nr_all_pairs:
                         if motif in pair:
                             check_single = False
                             break
                     if check_single:
-                        single.append(motif)
+                        single.append([motif])
 
-            final_pairs = new_all_pairs + single
-            if final_pairs:
-                val["motifs"] = final_pairs
+            nr_final_pairs = nr_all_pairs + single
+            if nr_final_pairs:
+                val["motifs"] = nr_final_pairs
 
     return iadhore_position_with_motifs_dict
