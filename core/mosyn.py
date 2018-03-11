@@ -134,7 +134,9 @@ def add_motifs_into_synteny(iadhore_synteny_dict, motifs_gtf_folder):
                                              "start": motif_start,
                                              "end": motif_end,
                                              "strand": motif_strand,
-                                             "distance": distance}
+                                             "distance": distance,
+                                             "chromosome": chromosome,
+                                             "genome": genome}
                                 this_element["motifs"].append(this_dict)
 
     return iadhore_synteny_dict
@@ -166,13 +168,14 @@ def restructure_iadhore_dict_to_position(iadhore_synteny_dict):
                 gene_dict["strand"] = v0["strand"]
                 gene_dict["gene"] = v0["gene"]
                 gene_dict["chromosome"] = chromosome
+                gene_dict["genome"] = genome
 
                 try:
                     gene_dict["motifs"] = v0["motifs"]
                 except KeyError:
                     pass
 
-                position[pos][genome] = gene_dict
+                position[pos][k] = gene_dict
 
         restructured_dict[key] = position
 
@@ -180,6 +183,12 @@ def restructure_iadhore_dict_to_position(iadhore_synteny_dict):
 
 
 def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=0.1):
+    """
+    Align motifs into i-ADHoRe synteny
+    :param iadhore_position_with_motifs_dict: i-ADHoRe position with motifs
+    :param window: Window size (percentage)
+    :return: i-ADHoRe position with aligned motifs
+    """
 
     for key, value in iadhore_position_with_motifs_dict.items():
         for ke, val in value.items():
@@ -290,7 +299,49 @@ def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=0.1):
                         single.append([motif])
 
             nr_final_pairs = nr_all_pairs + single
+
+            # delete working motifs
+            for k, v in val.items():
+
+                if "motifs" not in v.keys():
+                    continue
+
+                del v["motifs"]
+
+            # append final result
             if nr_final_pairs:
                 val["motifs"] = nr_final_pairs
 
     return iadhore_position_with_motifs_dict
+
+
+def get_complete_motifs_synteny(iadhore_with_aligned_motifs_dict):
+    """
+    Get complete pairs, which have pair in all of the segments
+    :param iadhore_with_aligned_motifs_dict: i-ADHoRe dict with aligned motifs
+    :return: complete motifs synteny
+    """
+
+    for key, value in iadhore_with_aligned_motifs_dict.items():
+        for ke, val in value.items():
+
+            if "motifs" not in val.keys():
+                continue
+
+            num_of_species = len(list(val.keys())) - 1
+
+            complete_pairs = []
+            for pairs in val["motifs"]:
+
+                if len(pairs) < num_of_species:
+                    continue
+
+                complete_pairs.append(pairs)
+
+            if not complete_pairs:
+                del val["motifs"]
+                continue
+
+            val["motifs"] = complete_pairs
+
+    return iadhore_with_aligned_motifs_dict
