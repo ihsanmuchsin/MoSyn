@@ -7,6 +7,8 @@ import os
 import subprocess
 import glob
 
+import prep.fasta as pf
+
 from misc.string import check_folder_path
 
 
@@ -35,7 +37,15 @@ def run_storm(infolder, pwm_folder, outfolder, storm_options=None, calculate_bas
     pwm_folder = check_folder_path(pwm_folder)
     outfolder = check_folder_path(outfolder, True)
 
-    for fas in glob.glob(infolder + '*'):
+    working_directory = outfolder + 'working_directory/'
+    working_directory = check_folder_path(working_directory, True)
+
+    cleaned_fasta = working_directory + 'cleaned_fasta/'
+    cleaned_fasta = check_folder_path(cleaned_fasta, True)
+
+    pf.clean_header_fasta_folder(infolder, cleaned_fasta)
+
+    for fas in glob.glob(cleaned_fasta + '*'):
 
         acgt = None
 

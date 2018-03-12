@@ -2,7 +2,15 @@
 MoSyn function
 """
 
+import numpy
+import json
+import yaml
+import pickle
+
 import prep.gtf as pg
+import prep.storm as ps
+import prep.iadhore as pi
+from misc.string import check_folder_path
 
 
 def restructure_gtf_dict(gtf_dict):
@@ -68,10 +76,10 @@ def add_location_to_iadhore_synteny(iadhore_synteny_dict, gtf_folder):
     return iadhore_synteny_dict
 
 
-def add_motifs_into_synteny(iadhore_synteny_dict, motifs_gtf_folder):
+def add_motifs_into_synteny(iadhore_location, motifs_gtf_folder):
     """
     Add motifs as a list of set(motif_id, distance_to_element) as a value of element["motifs"] in iadhore synteny dict
-    :param iadhore_synteny_dict: i-ADHoRe synteny dict
+    :param iadhore_location: i-ADHoRe synteny dict
     :param motifs_gtf_folder: motifs in GTF format
     :return: i-ADHoRe synteny with added motifs
     """
@@ -82,7 +90,7 @@ def add_motifs_into_synteny(iadhore_synteny_dict, motifs_gtf_folder):
         for k, v in value.items():
             for v1 in v:
 
-                for key0, value0 in iadhore_synteny_dict.items():
+                for key0, value0 in iadhore_location.items():
                     for k0, v0 in value0["segments"].items():
 
                         genome = v0["genome"]
@@ -139,19 +147,19 @@ def add_motifs_into_synteny(iadhore_synteny_dict, motifs_gtf_folder):
                                              "genome": genome}
                                 this_element["motifs"].append(this_dict)
 
-    return iadhore_synteny_dict
+    return iadhore_location
 
 
-def restructure_iadhore_dict_to_position(iadhore_synteny_dict):
+def restructure_iadhore_dict_to_position(iadhore_location):
     """
     Change the structure the i-ADHoRe dictionary to Multiplicon -> Position -> Genome -> Element.
     The resulted dictionary only retain ID, chromosome, start, end, strand, and motifs
-    :param iadhore_synteny_dict: Normal i-ADHoRe synteny dict
+    :param iadhore_location: Normal i-ADHoRe synteny dict
     :return: Restructured i-ADHoRe synteny dict
     """
 
     restructured_dict = dict()
-    for key, value in iadhore_synteny_dict.items():
+    for key, value in iadhore_location.items():
         position = dict()
         for k, v in value["segments"].items():
             genome = v["genome"]
@@ -300,6 +308,17 @@ def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=0.1):
 
             nr_final_pairs = nr_all_pairs + single
 
+            # sort final pairs
+            mean_distance = dict()
+            for pair in nr_final_pairs:
+                pr_dist = [p["distance"] for p in pair]
+                pr_mean = numpy.mean(pr_dist)
+                mean_distance[pr_mean] = pair
+
+            sorted_pairs = []
+            for di, pr in sorted(mean_distance.items()):
+                sorted_pairs.append(pr)
+
             # delete working motifs
             for k, v in val.items():
 
@@ -309,8 +328,8 @@ def align_motifs_in_synteny(iadhore_position_with_motifs_dict, window=0.1):
                 del v["motifs"]
 
             # append final result
-            if nr_final_pairs:
-                val["motifs"] = nr_final_pairs
+            if sorted_pairs:
+                val["motifs"] = sorted_pairs
 
     return iadhore_position_with_motifs_dict
 
@@ -345,3 +364,153 @@ def get_complete_motifs_synteny(iadhore_with_aligned_motifs_dict):
             val["motifs"] = complete_pairs
 
     return iadhore_with_aligned_motifs_dict
+
+
+def dump_aligned_motifs_to_flat_synteny(iadhore_with_aligned_motifs, outfile):
+    """
+    Dump aligned motifs to synteny flat file
+    :param iadhore_with_aligned_motifs: i-ADHoRe with aligned motifs
+    :param outfile: synteny flat file
+    :return:
+    """
+
+    fout = open(outfile, 'w')
+
+    for key, value in sorted(iadhore_with_aligned_motifs.items()):
+
+        genome_chromosome_list = []
+        for ke, val in value.items():
+
+            segment_keys = list(val.keys())
+            if "motifs" in val.keys():
+                segment_keys.remove("motifs")
+
+            for k in segment_keys:
+                genome_chromosome = [val[k]["genome"], val[k]["chromosome"]]
+                if genome_chromosome not in genome_chromosome_list:
+                    genome_chromosome_list.append(genome_chromosome)
+
+        genome_chromosome_list = sorted(genome_chromosome_list)
+
+        genome_str = ",".join([str(g[0]) for g in genome_chromosome_list])
+        chromosome_str = ",".join([str(g[1]) for g in genome_chromosome_list])
+        print("#synteny_id="+str(key)+";", "genome="+genome_str+";", "chromosome="+chromosome_str+";",
+              file=fout)
+
+        for ke, val in sorted(value.items()):
+            this_position_genes = []
+            for gn_chr in genome_chromosome_list:
+                this_gene = None
+                for k, v in val.items():
+
+                    if k == "motifs":
+                        continue
+
+                    g_genome = v["genome"]
+                    g_chromosome = v["chromosome"]
+
+                    g_gc = [g_genome, g_chromosome]
+                    if not (g_gc == gn_chr):
+                        continue
+
+                    this_gene = v
+                    break
+
+                if this_gene:
+                    this_position_genes.append(this_gene["gene"]+this_gene["strand"])
+                else:
+                    this_position_genes.append("-")
+
+            print("\t".join(this_position_genes), file=fout)
+
+            if "motifs" not in val.keys():
+                continue
+
+            for pair in val["motifs"]:
+                this_position_motifs = []
+                for gc in genome_chromosome_list:
+                    this_p = None
+                    for p in pair:
+                        p_genome = p["genome"]
+                        p_chromosome = p["chromosome"]
+                        p_gc = [p_genome, p_chromosome]
+
+                        if not (p_gc == gc):
+                            continue
+
+                        this_p = p
+                        break
+
+                    if this_p:
+                        this_position_motifs.append(this_p["motif"]+this_p["strand"])
+                    else:
+                        this_position_motifs.append("-")
+
+                print("\t".join(this_position_motifs), file=fout)
+
+    fout.close()
+
+
+def dump_aligned_motifs_to_serial(iadhore_with_aligned_motifs, outfile, ftype='yaml'):
+    """
+    Dump aligned motifs to serialized file
+    :param ftype: File type, e.g., YAML JSON, Pickle
+    :param iadhore_with_aligned_motifs: i-ADHoRe with aligned motifs
+    :param outfile: serialized file
+    :return:
+    """
+
+    fout = open(outfile, 'w')
+
+    if ftype == "json":
+        json.dump(iadhore_with_aligned_motifs, fout, indent=5)
+    elif ftype == "yaml":
+        yaml.dump(iadhore_with_aligned_motifs, fout)
+    elif ftype == "pickle":
+        fout.close()
+        fout = open(outfile, 'wb')
+        pickle.dump(iadhore_with_aligned_motifs, fout)
+
+    fout.close()
+
+
+def run_mosyn(iadhore_output_folder, storm_output_folder, gtf_folder, outfolder,
+              window=0.1, complete=True, binding_site_id="BS", id_start_index=0, motif_name="MOTIF"):
+    """
+    Run MoSyn
+    :param motif_name: The name of the motif
+    :param id_start_index: The binding site id start index
+    :param binding_site_id: The binding site id
+    :param window: Window size of alignment
+    :param iadhore_output_folder: i-ADHoRe output folder
+    :param storm_output_folder: CREAD STORM output folder
+    :param gtf_folder: GTF folder
+    :param outfolder: MoSyn result folder
+    :param complete: Complete alignment
+    :return:
+    """
+
+    outfolder = check_folder_path(outfolder, True)
+
+    working_directory = outfolder + 'working_directory/'
+    working_directory = check_folder_path(working_directory, True)
+
+    motifs_gtf_folder = working_directory + 'motifs_gtf/'
+    motifs_gtf_folder = check_folder_path(motifs_gtf_folder, True)
+    ps.transfac_to_gtf_folder(storm_output_folder, motifs_gtf_folder, binding_site_id, id_start_index, motif_name)
+
+    iadhore_dict = pi.iadhore_result_folder_to_dict(iadhore_output_folder)
+    if complete:
+        iadhore_dict = pi.get_complete_synteny_dict(iadhore_dict)
+    iadhore_with_location = add_location_to_iadhore_synteny(iadhore_dict, gtf_folder)
+    iadhore_with_motifs = add_motifs_into_synteny(iadhore_with_location, motifs_gtf_folder)
+    restructured_iadhore = restructure_iadhore_dict_to_position(iadhore_with_motifs)
+    iadhore_with_pairs = align_motifs_in_synteny(restructured_iadhore, window)
+    if complete:
+        iadhore_with_pairs = get_complete_motifs_synteny(iadhore_with_pairs)
+
+    flat_synteny = outfolder + "synteny.txt"
+    serial_synteny = outfolder + "synteny.yaml"
+
+    dump_aligned_motifs_to_flat_synteny(iadhore_with_pairs, flat_synteny)
+    dump_aligned_motifs_to_serial(iadhore_with_pairs, serial_synteny)

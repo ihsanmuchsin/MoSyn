@@ -4,7 +4,6 @@ STORM processing
 
 import glob
 import os
-import re
 
 from misc.string import check_folder_path
 
@@ -12,6 +11,7 @@ from misc.string import check_folder_path
 def transfac_to_gtf(infile, outfile, binding_site_id="BS", id_start_index=0, motif_name="MOTIF", return_index=False):
     """
     Convert a TRANSFAC file / STORM output to GTF
+    :param return_index: Return last index value
     :param motif_name: The motif name, e.g., CTCF.
     :param binding_site_id: The ID of the binding sites, e.g., BS. It will be BS0, BS1, .., BSx in the output
     :param id_start_index: the start index of the motif ID, e.g., 0,1,2,...,x

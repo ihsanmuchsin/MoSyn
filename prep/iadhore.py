@@ -9,7 +9,6 @@ import yaml
 import pickle
 
 from misc.string import check_folder_path, is_int
-from prep.gtf import gtf_to_dict_folder
 
 
 def iadhore_family_to_dict(infile):
@@ -271,18 +270,13 @@ def iadhore_result_to_serial(infolder, outfile, ftype="json", complete=False):
 
     fout = open(outfile, 'w')
 
-    if ftype=="json":
+    if ftype == "json":
         json.dump(serial_dict, fout, indent=5)
-    elif ftype=="yaml":
+    elif ftype == "yaml":
         yaml.dump(serial_dict, fout)
-    elif ftype=="pickle":
+    elif ftype == "pickle":
         fout.close()
         fout = open(outfile, 'wb')
         pickle.dump(serial_dict, fout)
 
     fout.close()
-
-
-
-
-
