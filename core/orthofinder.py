@@ -30,7 +30,7 @@ def run_orthofinder(infolder, outfolder, python2env, orthofinder_options=None):
 
     pf.clean_header_fasta_folder(infolder, cleaned_fasta)
 
-    orthofinder_script = 'orthofinder.bash'
+    orthofinder_script = working_directory + 'orthofinder.bash'
     fout = open(orthofinder_script, 'w')
 
     print('source', 'activate', python2env, file=fout)
@@ -43,7 +43,6 @@ def run_orthofinder(infolder, outfolder, python2env, orthofinder_options=None):
     fout.close()
 
     subprocess.call(['bash', orthofinder_script])
-    subprocess.call(['rm', orthofinder_script])
 
     for p in glob.glob(cleaned_fasta + '*'):
         if os.path.isdir(p):
