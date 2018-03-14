@@ -6,7 +6,7 @@ import yaml
 import numpy
 
 
-def identify_loops_in_synteny(motifs_synteny_yaml_file, min_length=10000, max_length=1000000):
+def identify_loops_in_synteny(motifs_synteny_yaml_file, min_length=80000, max_length=800000):
     """
     Identify k-mer to k-mer loops
     :param motifs_synteny_yaml_file: MoSyn YAML output
