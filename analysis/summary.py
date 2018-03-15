@@ -103,26 +103,10 @@ def generate_mosyn_summary(infolder, genus_index=-5, alignment_index=-4, score_i
 
             num_of_mult += 1
 
-            position_keys = sorted([k for k in value.keys() if k != "loops"])
-            avg_mult_genes = len(position_keys)
-
-            segment_keys = sorted([k for k in value[position_keys[0]].keys() if k != "motifs"])
-            num_of_segments = len(segment_keys)
-
-            mult_length = 0
-            for sk in segment_keys:
-                s_loc = [value[position_keys[0]][sk]["start"], value[position_keys[0]][sk]["end"],
-                         value[position_keys[-1]][sk]["start"], value[position_keys[-1]][sk]["end"]]
-                s_start = min(s_loc)
-                s_end = max(s_loc)
-                s_length = abs(s_end - s_start)
-                mult_length += s_length
-            avg_mult_length = mult_length / num_of_segments
+            mult_size = dict()
 
             mult_motifs = 0
             mult_genes = 0
-
-            avg_mult_motifs = 0
 
             check_contain = False
 
@@ -138,7 +122,6 @@ def generate_mosyn_summary(infolder, genus_index=-5, alignment_index=-4, score_i
                         if not check_contain:
                             check_contain = True
 
-                        avg_mult_motifs += len(v)
                         for pair in v:
                             for motif in pair:
                                 mult_motifs += 1
@@ -146,16 +129,29 @@ def generate_mosyn_summary(infolder, genus_index=-5, alignment_index=-4, score_i
 
                     else:
                         mult_genes += 1
+                        v_gc = (v["genome"], v["chromosome"])
+
+                        if v_gc not in mult_size.keys():
+                            mult_size[v_gc] = [v["start"], v["end"]]
+
+                        if mult_size[v_gc][0] > v["start"]:
+                            mult_size[v_gc][0] = v["start"]
+
+                        if mult_size[v_gc][-1] < v["end"]:
+                            mult_size[v_gc][-1] = v["end"]
+
                         set_of_genes.add(v["gene"])
-
-            alternative_mult_genes = avg_mult_genes * num_of_segments
-            alternative_mult_motifs = avg_mult_motifs * num_of_segments
-
-            assert alternative_mult_genes == mult_genes
-            assert alternative_mult_motifs == mult_motifs
 
             if check_contain:
                 synteny_contain += 1
+
+            num_of_segments = len(mult_size)
+            mult_loc = [abs(y-x) for x, y in mult_size.values()]
+            mult_length = sum(mult_loc)
+
+            avg_mult_length = mult_length / num_of_segments
+            avg_mult_genes = mult_genes / num_of_segments
+            avg_mult_motifs = mult_motifs / num_of_segments
 
             synteny_length += avg_mult_length
             synteny_genes += avg_mult_genes
@@ -203,7 +199,7 @@ def generate_loop_summary(infolder, outfolder, genus_index=-5, alignment_index=-
 
     print("Genus", "Alignment", "Score", "PWM", "Number_of_Loops",
           "Number_of_Genes_in_Loops", "Number_of_Motifs_in_Loops",
-          "Average_Number_of_Genes_per_Loops_per_Species", "Average_Length_per_Synteny_per_Species",
+          "Average_Number_of_Genes_per_Loops_per_Species", "Average_Length_per_Loops_per_Species",
           "Average_Number_of_Motifs_per_Loops_per_Species", sep=",", file=fout0)
 
     infolder = check_folder_path(infolder)
@@ -357,7 +353,7 @@ def generate_loop_summary(infolder, outfolder, genus_index=-5, alignment_index=-
                 overall_genes += avg_loop_genes
                 overall_motifs += avg_loop_motifs
 
-                print(genus, alignment, score, pwm, key, num_of_segments, loop_genes, loop_motifs, loop_length,
+                print(genus, alignment, score, pwm, loop_index, num_of_segments, loop_genes, loop_motifs, loop_length,
                       sep=",", file=fout)
 
                 loop_index += 1
