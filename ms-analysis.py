@@ -27,12 +27,18 @@ def idloop(args):
     with open(outfile0, 'w') as stream:
         yaml.dump(mosyn_loops, stream)
 
-def summarize_orthofinder(args):
 
-    storm_result = args.input
-    outfile = args.output
+def summarize(args):
 
-    asm.generate_orthofinder_summary(storm_result, outfile, args.gidx, args.aidx)
+    infolder = args.input
+    result = args.output
+
+    if args.type == "orthofinder":
+        asm.generate_orthofinder_summary(infolder, result, args.gidx, args.aidx)
+    elif args.type == "iadhore_detail":
+        asm.generate_detailed_iadhore_summary(infolder, result, args.material, args.gidx, args.aidx)
+    elif args.type == "iadhore_short":
+        asm.generate_short_iadhore_summary(infolder, result, args.material, args.gidx, args.aidx)
 
 
 p = ArgumentParser(prog='ms-analysis', description='Data analysis for MoSyn pipeline')
@@ -46,12 +52,17 @@ p_ilo.add_argument('--min', metavar='<Integer>', help='The minimum length of the
 p_ilo.add_argument('--max', metavar='<Integer>', help='The maximum length of the loops', default=800000, type=int)
 p_ilo.set_defaults(func=idloop)
 
-p_suo = subp.add_parser('summarize-ortho', help='Summarize OrthoFinder result')
+p_suo = subp.add_parser('summarize', help='Summarize result')
 p_suo.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
-p_suo.add_argument('--output', metavar='<String>', help='Path to the output file', default="orthofinder_summary.csv")
-p_suo.add_argument('--gidx', metavar='<Integer>', help='The minimum length of the loops', default=-3, type=int)
-p_suo.add_argument('--aidx', metavar='<Integer>', help='The maximum length of the loops', default=-2, type=int)
-p_suo.set_defaults(func=summarize_orthofinder)
+p_suo.add_argument('--type', metavar='<String>', help='Type of the result to summarize, e.g., orthofinder',
+                   required=True)
+p_suo.add_argument('--material', metavar='<String>', help='Path to the material folder. Required for i-ADHoRe summary')
+p_suo.add_argument('--output', metavar='<String>', help='Path to the output file', default="summary.csv")
+p_suo.add_argument('--gidx', metavar='<Integer>', help='The genus folder relative index to result',
+                   default=-3, type=int)
+p_suo.add_argument('--aidx', metavar='<Integer>', help='The alignment folder relative index to result',
+                   default=-2, type=int)
+p_suo.set_defaults(func=summarize)
 
 
 if len(argv) == 1:
@@ -61,7 +72,7 @@ if len(argv) == 1:
 if len(argv) == 2:
     if argv[1] == 'idloop':
         p_ilo.print_help()
-    elif argv[1] == 'summarize-ortho':
+    elif argv[1] == 'summarize':
         p_suo.print_help()
     exit(0)
 
