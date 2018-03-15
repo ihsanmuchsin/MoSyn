@@ -36,6 +36,8 @@ def summarize(args):
         asm.generate_orthofinder_summary(infolder, args.gidx, args.aidx)
     elif args.type == "mosyn":
         asm.generate_mosyn_summary(infolder, args.gidx, args.aidx, args.sidx, args.pidx)
+    elif args.type == "loop":
+        asm.generate_loop_summary(infolder, args.output, args.gidx, args.aidx, args.sidx, args.pidx)
 
 
 p = ArgumentParser(prog='ms-analysis', description='Data analysis for MoSyn pipeline')
@@ -53,6 +55,8 @@ p_suo = subp.add_parser('summarize', help='Summarize result')
 p_suo.add_argument('--input', metavar='<String>', help='Path to the input folder', required=True)
 p_suo.add_argument('--type', metavar='<String>', help='Type of the result to summarize, e.g., orthofinder',
                    required=True)
+p_suo.add_argument('--output', metavar='<String>', default="./summary/",
+                   help='Path to the output folder. Required for Loops summary')
 p_suo.add_argument('--material', metavar='<String>', help='Path to the material folder. Required for i-ADHoRe summary')
 p_suo.add_argument('--gidx', metavar='<Integer>', help='The genus folder relative index to result', type=int)
 p_suo.add_argument('--aidx', metavar='<Integer>', help='The alignment folder relative index to result', type=int)
