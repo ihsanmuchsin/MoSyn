@@ -66,7 +66,7 @@ def transfac_to_gtf_folder(infolder, outfolder, binding_site_id="BS", id_start_i
     infolder = check_folder_path(infolder)
     outfolder = check_folder_path(outfolder, True)
 
-    for file in glob.glob(infolder + '*'):
+    for file in sorted(glob.glob(infolder + '*')):
         filename = os.path.basename(file)
         new_filename = filename.split(".")[0] + ".gtf"
         outfile = outfolder + new_filename

@@ -3,24 +3,22 @@ Generating summary
 """
 
 import glob
-import os
+import yaml
 
-import prep.iadhore as pi
-import core.mosyn as cm
 
 from misc.string import check_folder_path
 
 
-def generate_orthofinder_summary(infolder, outfile, genus_index=-3, alignment_index=-2):
+def generate_orthofinder_summary(infolder, genus_index=-3, alignment_index=-2):
     """
-    Generate orthofinder summary.
-    Structure of the folder Genus -> Alignment Method -> Result
-    :param outfile: Output file
-    :param alignment_index: Alignment folder index from result
-    :param genus_index: Genus folder index from result
-    :param infolder: Folder containing orthofinder result
+    Generate OrthoFinder summary
+    :param infolder: Input folder containing result
+    :param genus_index: Genus index folder relative to result file
+    :param alignment_index: Alignment index folder relative to result file
     :return:
     """
+
+    outfile = "orthofinder_summary.csv"
 
     fout = open(outfile, 'w')
 
@@ -54,125 +52,127 @@ def generate_orthofinder_summary(infolder, outfile, genus_index=-3, alignment_in
     fout.close()
 
 
-def generate_detailed_iadhore_summary(infolder, outfile, material_folder, genus_index=-3, alignment_index=-2):
+def generate_mosyn_summary(infolder, genus_index=-5, alignment_index=-4, score_index=-3, pwm_index=-2):
     """
-    Generate detailed i-ADHoRe summary.
-    Result structure Genus -> Alignment -> Result
-    GTF structure Material -> Genus -> GTF
-    :param material_folder: Folder containing GTF folder
-    :param infolder: Folder containing i-ADHoRe result
-    :param outfile: Output folder
-    :param genus_index: Genus folder index from result
-    :param alignment_index: Alignment folder index from result
+    Generate MoSyn summary
+    :param infolder: Input folder containing result
+    :param genus_index: Genus index folder relative to result file
+    :param alignment_index: Alignment index folder relative to result file
+    :param score_index: Score index folder relative to result file
+    :param pwm_index: PWM index folder relative to result file
     :return:
     """
 
-    material_folder = check_folder_path(material_folder)
+    outfile = "mosyn_detail_summary.csv"
+    outfile0 = "mosyn_short_summary.csv"
 
     fout = open(outfile, 'w')
+    fout0 = open(outfile0, 'w')
 
-    print("Genus", "Alignment", "Synteny_ID", "Number_of_Segments", "Number_of_Genes", "Total_Length",
-          sep=",", file=fout)
+    print("Genus", "Alignment", "Score", "PWM", "Synteny_ID", "Number_of_Segments", "Number_of_Genes", "Number_of_CTCF",
+          "Total_Length", sep=",", file=fout)
 
-    infolder = check_folder_path(infolder)
-    for mult in glob.glob(infolder + '**/multiplicons.txt', recursive=True):
-
-        path_elem = mult.split('/')
-        genus = path_elem[genus_index]
-        alignment = path_elem[alignment_index]
-
-        gtf_folder = material_folder + "/".join([genus, "GTF"])
-        gtf_folder = check_folder_path(gtf_folder)
-
-        iadhore_result = os.path.dirname(mult)
-        iadhore_dict = pi.iadhore_result_folder_to_dict(iadhore_result)
-        iadhore_dict_with_location = cm.add_location_to_iadhore_synteny(iadhore_dict, gtf_folder)
-
-        for key, value in iadhore_dict_with_location.items():
-
-            number_of_segments = 0
-            number_of_genes = 0
-            total_length = 0
-
-            for ke, val in value["segments"].items():
-                number_of_segments += 1
-                length = abs(val["start"] - val["end"])
-                total_length += length
-                number_of_genes += len(val["elements"])
-
-            print(genus, alignment, key, number_of_segments, number_of_genes, total_length, sep=",", file=fout)
-
-    fout.close()
-
-
-def generate_short_iadhore_summary(infolder, outfile, material_folder, genus_index=-3, alignment_index=-2):
-    """
-    Generate detailed i-ADHoRe summary.
-    Result structure Genus -> Alignment -> Result
-    GTF structure Material -> Genus -> GTF
-    :param material_folder: Folder containing GTF folder
-    :param infolder: Folder containing i-ADHoRe result
-    :param outfile: Output folder
-    :param genus_index: Genus folder index from result
-    :param alignment_index: Alignment folder index from result
-    :return:
-    """
-
-    material_folder = check_folder_path(material_folder)
-
-    fout = open(outfile, 'w')
-
-    print("Genus", "Alignment", "Number_of_Synteny", "Number_of_Genes_in_Synteny",
-          "Average_Number_of_Genes_per_Synteny", "Average_Length_per_Synteny",
-          sep=",", file=fout)
+    print("Genus", "Alignment", "Score", "PWM", "Number_of_Synteny", "Number_of_Genes_in_Synteny",
+          "Number_of_Synteny_containing_Motifs", "Number_of_Motifs_in_Synteny",
+          "Average_Number_of_Genes_per_Synteny_per_Species", "Average_Length_per_Synteny_per_Species",
+          "Average_Number_of_Motifs_per_Synteny_per_Species", sep=",", file=fout0)
 
     infolder = check_folder_path(infolder)
-    for mult in glob.glob(infolder + '**/multiplicons.txt', recursive=True):
+    for synt in glob.glob(infolder + '**/synteny.yaml', recursive=True):
 
-        path_elem = mult.split('/')
+        path_elem = synt.split('/')
         genus = path_elem[genus_index]
         alignment = path_elem[alignment_index]
+        score = path_elem[score_index]
+        pwm = path_elem[pwm_index]
 
-        gtf_folder = material_folder + "/".join([genus, "GTF"])
-        gtf_folder = check_folder_path(gtf_folder)
-
-        iadhore_result = os.path.dirname(mult)
-        iadhore_dict = pi.iadhore_result_folder_to_dict(iadhore_result)
-        iadhore_dict_with_location = cm.add_location_to_iadhore_synteny(iadhore_dict, gtf_folder)
+        with open(synt, 'r') as stream:
+            iadhore_dict_with_motifs = yaml.load(stream)
 
         synteny_length = 0
         synteny_genes = 0
         num_of_mult = 0
 
+        synteny_motifs = 0
+        synteny_contain = 0
+
         set_of_genes = set()
+        set_of_motifs = set()
 
-        for key, value in iadhore_dict_with_location.items():
+        for key, value in sorted(iadhore_dict_with_motifs.items()):
 
-            number_of_segments = 0
-            mult_genes = 0
-            mult_length = 0
-
-            for ke, val in value["segments"].items():
-                number_of_segments += 1
-                length = abs(val["start"] - val["end"])
-                mult_length += length
-                mult_genes += len(val["elements"])
-
-                for v in val["elements"].values():
-                    set_of_genes.add(v["gene"])
-
-            mult_avg_len = mult_length / number_of_segments
-            mult_avg_genes = mult_genes / number_of_segments
-
-            synteny_length += mult_avg_len
-            synteny_genes += mult_avg_genes
             num_of_mult += 1
 
-        nr_genes = len(set_of_genes)
-        synteny_avg_length = synteny_length / num_of_mult
-        synteny_avg_genes = synteny_genes / num_of_mult
+            position_keys = sorted([k for k in value.keys() if k != "loops"])
+            avg_mult_genes = len(position_keys)
 
-        print(genus, alignment, num_of_mult, nr_genes, synteny_avg_genes, synteny_avg_length, sep=",", file=fout)
+            segment_keys = sorted([k for k in value[position_keys[0]].keys() if k != "motifs"])
+            num_of_segments = len(segment_keys)
+
+            mult_length = 0
+            for sk in segment_keys:
+                s_loc = [value[position_keys[0]][sk]["start"], value[position_keys[0]][sk]["end"],
+                         value[position_keys[-1]][sk]["start"], value[position_keys[-1]][sk]["end"]]
+                s_start = min(s_loc)
+                s_end = max(s_loc)
+                s_length = abs(s_end - s_start)
+                mult_length += s_length
+            avg_mult_length = mult_length / num_of_segments
+
+            mult_motifs = 0
+            mult_genes = 0
+
+            avg_mult_motifs = 0
+
+            check_contain = False
+
+            for ke, val in value.items():
+
+                if ke == "loops":
+                    continue
+
+                for k, v in val.items():
+
+                    if k == "motifs":
+
+                        if not check_contain:
+                            check_contain = True
+
+                        avg_mult_motifs += len(v)
+                        for pair in v:
+                            for motif in pair:
+                                mult_motifs += 1
+                                set_of_motifs.add(motif["motif"])
+
+                    else:
+                        mult_genes += 1
+                        set_of_genes.add(v["gene"])
+
+            alternative_mult_genes = avg_mult_genes * num_of_segments
+            alternative_mult_motifs = avg_mult_motifs * num_of_segments
+
+            assert alternative_mult_genes == mult_genes
+            assert alternative_mult_motifs == mult_motifs
+
+            if check_contain:
+                synteny_contain += 1
+
+            synteny_length += avg_mult_length
+            synteny_genes += avg_mult_genes
+            synteny_motifs += avg_mult_motifs
+
+            print(genus, alignment, score, pwm, key, num_of_segments, mult_genes, mult_motifs, mult_length,
+                  sep=",", file=fout)
+
+        nr_genes = len(set_of_genes)
+        nr_motifs = len(set_of_motifs)
+
+        avg_synteny_length = synteny_length / num_of_mult
+        avg_synteny_genes = synteny_genes / num_of_mult
+        avg_synteny_motifs = synteny_motifs / synteny_contain
+
+        print(genus, alignment, score, pwm, num_of_mult, nr_genes, synteny_contain, nr_motifs,
+              avg_synteny_genes, avg_synteny_length, avg_synteny_motifs, sep=",", file=fout0)
 
     fout.close()
-
+    fout0.close()

@@ -31,14 +31,11 @@ def idloop(args):
 def summarize(args):
 
     infolder = args.input
-    result = args.output
 
     if args.type == "orthofinder":
-        asm.generate_orthofinder_summary(infolder, result, args.gidx, args.aidx)
-    elif args.type == "iadhore_detail":
-        asm.generate_detailed_iadhore_summary(infolder, result, args.material, args.gidx, args.aidx)
-    elif args.type == "iadhore_short":
-        asm.generate_short_iadhore_summary(infolder, result, args.material, args.gidx, args.aidx)
+        asm.generate_orthofinder_summary(infolder, args.gidx, args.aidx)
+    elif args.type == "mosyn":
+        asm.generate_mosyn_summary(infolder, args.gidx, args.aidx, args.sidx, args.pidx)
 
 
 p = ArgumentParser(prog='ms-analysis', description='Data analysis for MoSyn pipeline')
@@ -57,11 +54,10 @@ p_suo.add_argument('--input', metavar='<String>', help='Path to the input folder
 p_suo.add_argument('--type', metavar='<String>', help='Type of the result to summarize, e.g., orthofinder',
                    required=True)
 p_suo.add_argument('--material', metavar='<String>', help='Path to the material folder. Required for i-ADHoRe summary')
-p_suo.add_argument('--output', metavar='<String>', help='Path to the output file', default="summary.csv")
-p_suo.add_argument('--gidx', metavar='<Integer>', help='The genus folder relative index to result',
-                   default=-3, type=int)
-p_suo.add_argument('--aidx', metavar='<Integer>', help='The alignment folder relative index to result',
-                   default=-2, type=int)
+p_suo.add_argument('--gidx', metavar='<Integer>', help='The genus folder relative index to result', type=int)
+p_suo.add_argument('--aidx', metavar='<Integer>', help='The alignment folder relative index to result', type=int)
+p_suo.add_argument('--sidx', metavar='<Integer>', help='The score folder relative index to result', type=int)
+p_suo.add_argument('--pidx', metavar='<Integer>', help='The pwm folder relative index to result', type=int)
 p_suo.set_defaults(func=summarize)
 
 
