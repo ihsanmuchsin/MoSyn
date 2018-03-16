@@ -38,7 +38,12 @@ def summarize(args):
         asm.generate_mosyn_summary(infolder, args.gidx, args.aidx, args.sidx, args.pidx)
     elif args.type == "loop":
         asm.generate_loop_summary(infolder, args.output, args.gidx, args.aidx, args.sidx, args.pidx)
-
+    elif args.type == "gtfloop":
+        asm.generate_loop_synteny_gtf(infolder, args.output, args.gidx, args.aidx, args.sidx, args.pidx)
+    elif args.type == "storm":
+        asm.generate_storm_summary(infolder, args.gidx, args.sidx, args.pidx)
+    elif args.type == "genome":
+        asm.generate_genome_summary(infolder, args.gidx)
 
 p = ArgumentParser(prog='ms-analysis', description='Data analysis for MoSyn pipeline')
 

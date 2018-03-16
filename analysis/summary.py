@@ -5,6 +5,8 @@ Generating summary
 import glob
 import yaml
 
+from Bio import SeqIO
+from Bio.SeqUtils import GC
 
 from misc.string import check_folder_path
 
@@ -26,7 +28,7 @@ def generate_orthofinder_summary(infolder, genus_index=-3, alignment_index=-2):
           "Number_of_Orthogroups", sep=",", file=fout)
 
     infolder = check_folder_path(infolder)
-    for summary in glob.glob(infolder+'**/Statistics_Overall.csv', recursive=True):
+    for summary in glob.glob(infolder + '**/Statistics_Overall.csv', recursive=True):
 
         path_elem = summary.split('/')
         genus = path_elem[genus_index]
@@ -146,7 +148,7 @@ def generate_mosyn_summary(infolder, genus_index=-5, alignment_index=-4, score_i
                 synteny_contain += 1
 
             num_of_segments = len(mult_size)
-            mult_loc = [abs(y-x) for x, y in mult_size.values()]
+            mult_loc = [abs(y - x) for x, y in mult_size.values()]
             mult_length = sum(mult_loc)
 
             avg_mult_length = mult_length / num_of_segments
@@ -374,3 +376,192 @@ def generate_loop_summary(infolder, outfolder, genus_index=-5, alignment_index=-
 
     fout.close()
     fout0.close()
+
+
+def generate_loop_synteny_gtf(infolder, outfolder, genus_index=-5, alignment_index=-4, score_index=-3, pwm_index=-2):
+    """
+    Generate Loop summary
+    :param infolder: Input folder containing result
+    :param outfolder: Output folder
+    :param genus_index: Genus index folder relative to result file
+    :param alignment_index: Alignment index folder relative to result file
+    :param score_index: Score index folder relative to result file
+    :param pwm_index: PWM index folder relative to result file
+    :return:
+    """
+
+    infolder = check_folder_path(infolder)
+    outfolder = check_folder_path(outfolder, True)
+
+    for loop_file in glob.glob(infolder + '**/loops.yaml', recursive=True):
+
+        path_elem = loop_file.split('/')
+        genus = path_elem[genus_index]
+        alignment = path_elem[alignment_index]
+        score = path_elem[score_index]
+        pwm = path_elem[pwm_index]
+
+        with open(loop_file, 'r') as stream:
+            iadhore_dict_with_loops = yaml.load(stream)
+
+        loops_dict = dict()
+        synteny_dict = dict()
+
+        loop_index = 1
+
+        for key, value in sorted(iadhore_dict_with_loops.items()):
+
+            mult_size = dict()
+            position_keys = sorted([k for k in value.keys() if k != "loops"])
+
+            for pk in position_keys:
+
+                segment_keys = sorted([k for k in value[pk].keys() if k != "motifs"])
+
+                for sk in segment_keys:
+
+                    gene_gc = (value[pk][sk]["genome"], value[pk][sk]["chromosome"])
+
+                    if gene_gc not in mult_size.keys():
+                        mult_size[gene_gc] = [value[pk][sk]["start"], value[pk][sk]["end"]]
+
+                    mult_size[gene_gc] += [value[pk][sk]["start"], value[pk][sk]["end"]]
+
+            for k, v in mult_size.items():
+
+                synteny_start = min(v)
+                synteny_end = max(v)
+                synteny_strand = '+' if v[0] < v[-1] else '-'
+                synteny_attribute = "synteny_id \"" + str(key) + "\";"
+
+                if k[0] not in synteny_dict.keys():
+                    synteny_dict[k[0]] = []
+
+                synteny_dict[k[0]].append([k[1], "iADHoRe", "synteny", synteny_start, synteny_end, ".",
+                                           synteny_strand, ".", synteny_attribute])
+
+            if "loops" not in value.keys():
+                continue
+
+            for loop in value["loops"]:
+
+                first_motif = loop["first"]
+                last_motif = loop["last"]
+
+                loop_size = {(f["genome"], f["chromosome"]): (f["start"], f["end"], l["start"], l["end"])
+                             for f, l in zip(first_motif, last_motif)}
+
+                for k0, v0 in loop_size.items():
+
+                    loop_start = min(v0)
+                    loop_end = max(v0)
+                    loop_strand = '+' if v0[0] < v0[-1] else '-'
+                    loop_attribute = "loop_id \"" + str(loop_index) + "\";"
+
+                    if k0[0] not in loops_dict.keys():
+                        loops_dict[k0[0]] = []
+
+                    loops_dict[k0[0]].append([k0[1], "MoSyn", "loop_like", loop_start, loop_end, ".",
+                                              loop_strand, ".", loop_attribute])
+
+                loop_index += 1
+
+        loop_outdir = outfolder + "/".join(["loop", genus, alignment, score, pwm])
+        loop_outdir = check_folder_path(loop_outdir, True)
+
+        synteny_outdir = outfolder + "/".join(["synteny", genus, alignment, score, pwm])
+        synteny_outdir = check_folder_path(synteny_outdir, True)
+
+        for key, value in loops_dict.items():
+
+            outfile = loop_outdir + key + ".gtf"
+            fout = open(outfile, 'w')
+
+            for val in value:
+
+                val = [str(v) for v in val]
+                print("\t".join(val), file=fout)
+
+            fout.close()
+
+        for key, value in synteny_dict.items():
+
+            outfile = synteny_outdir + key + ".gtf"
+            fout = open(outfile, 'w')
+
+            for val in value:
+
+                val = [str(v) for v in val]
+                print("\t".join(val), file=fout)
+
+            fout.close()
+
+
+def generate_storm_summary(infolder, genus_index=-4, score_index=-3, pwm_index=-2):
+    """
+    Summarize CREAD STORM result
+    :param infolder: Result folder
+    :param genus_index: Genus index folder relative to result file
+    :param score_index: Score index folder relative to result file
+    :param pwm_index: PWM index folder relative to result file
+    :return:
+    """
+
+    outfile = "storm_summary.csv"
+    fout = open(outfile, 'w')
+
+    print("Genus", "Species", "STORM_Score_Threshold", "PWM", "Number_of_Motifs", sep=",", file=fout)
+    for stormout in glob.glob(infolder + '**/*.storm', recursive=True):
+
+        path_elem = stormout.split('/')
+        genus = path_elem[genus_index]
+        score = path_elem[score_index]
+        pwm = path_elem[pwm_index]
+        species = path_elem[-1].split(".")[0]
+
+        num_of_motifs = 0
+        fin = open(stormout, 'r')
+        for line in fin.readlines():
+            if line.startswith("BS"):
+                num_of_motifs += 1
+        fin.close()
+
+        print(genus, species, score, pwm, num_of_motifs, sep=",", file=fout)
+
+    fout.close()
+
+
+def generate_genome_summary(infolder, genus_index=-3):
+    """
+    Summarize Genome
+    :param infolder: Material folder
+    :param genus_index: Genus index folder relative to result file
+    :return:
+    """
+
+    outfile = "genome_summary.csv"
+    fout = open(outfile, 'w')
+
+    print("Genus", "Species", "Genome_Length", "GC_Content", sep=",", file=fout)
+    for genome in glob.glob(infolder + '**/Genome/*', recursive=True):
+
+        path_elem = genome.split('/')
+        genus = path_elem[genus_index]
+        species = path_elem[-1].split(".")[0]
+
+        genome_length = 0
+        genome__g_c = 0
+        fin = open(genome, "r")
+        for rec in SeqIO.parse(fin, 'fasta'):
+            seq_len = len(rec)
+            genome_length += seq_len
+
+            seq = rec.seq
+            seq_g_c = GC(seq) * seq_len
+            genome__g_c += seq_g_c
+
+        genome__g_c = genome__g_c / genome_length
+
+        print(genus, species, genome_length, genome__g_c, sep=",", file=fout)
+
+    fout.close()
