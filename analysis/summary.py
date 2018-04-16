@@ -5,6 +5,8 @@ Generating summary
 import glob
 import yaml
 
+import numpy as np
+
 from Bio import SeqIO
 from Bio.SeqUtils import GC
 
@@ -167,7 +169,10 @@ def generate_mosyn_summary(infolder, genus_index=-5, alignment_index=-4, score_i
 
         avg_synteny_length = synteny_length / num_of_mult
         avg_synteny_genes = synteny_genes / num_of_mult
-        avg_synteny_motifs = synteny_motifs / synteny_contain
+
+        avg_synteny_motifs = 0
+        if synteny_contain:
+            avg_synteny_motifs = synteny_motifs / synteny_contain
 
         print(genus, alignment, score, pwm, num_of_mult, nr_genes, synteny_contain, nr_motifs,
               avg_synteny_genes, avg_synteny_length, avg_synteny_motifs, sep=",", file=fout0)
@@ -539,29 +544,54 @@ def generate_genome_summary(infolder, genus_index=-3):
     :return:
     """
 
-    outfile = "genome_summary.csv"
-    fout = open(outfile, 'w')
+    outfile = "genome_short_summary.csv"
+    outfile0 = "genome_long_summary.csv"
 
-    print("Genus", "Species", "Genome_Length", "GC_Content", sep=",", file=fout)
+    fout = open(outfile, 'w')
+    fout0 = open(outfile0, 'w')
+
+    print("Genus", "Species", "Number_of_Sequences", "Genome_Length", "Average_Sequence_Length", "SD_Sequence_Length",
+          "Genome_GC_Content", "Average_Sequence_GC_Content", "SD_Sequence_GC_Content", sep=",", file=fout)
+    print("Genus", "Species", "Sequence_ID", "Sequence_Length", "Sequence_GC", sep=",", file=fout0)
+
     for genome in glob.glob(infolder + '**/Genome/*', recursive=True):
 
         path_elem = genome.split('/')
         genus = path_elem[genus_index]
         species = path_elem[-1].split(".")[0]
 
-        genome_length = 0
-        genome__g_c = 0
+        genome_length = []
+        genome_gc = []
+        genome_gc_percentage = []
+
         fin = open(genome, "r")
         for rec in SeqIO.parse(fin, 'fasta'):
+
+            seq_id = rec.id
+
             seq_len = len(rec)
-            genome_length += seq_len
+            genome_length.append(seq_len)
 
             seq = rec.seq
-            seq_g_c = GC(seq) * seq_len
-            genome__g_c += seq_g_c
+            seq_gc_percentage = GC(seq)
+            genome_gc_percentage.append(seq_gc_percentage)
+            seq_gc = seq_gc_percentage * seq_len
+            genome_gc.append(seq_gc)
 
-        genome__g_c = genome__g_c / genome_length
+            print(genus, species, seq_id, seq_len, seq_gc_percentage, sep=",", file=fout0)
 
-        print(genus, species, genome_length, genome__g_c, sep=",", file=fout)
+        num_of_contigs = len(genome_length)
+
+        total_genome_length = np.sum(genome_length)
+        avg_genome_len = np.mean(genome_length)
+        std_genome_len = np.std(genome_length)
+
+        total_genome_gc = np.sum(genome_gc) / np.sum(genome_length)
+        avg_genome_gc = np.mean(genome_gc_percentage)
+        std_genome_gc = np.std(genome_gc_percentage)
+
+        print(genus, species, num_of_contigs, total_genome_length, avg_genome_len, std_genome_len,
+              total_genome_gc, avg_genome_gc, std_genome_gc, sep=",", file=fout)
 
     fout.close()
+    fout0.close()
